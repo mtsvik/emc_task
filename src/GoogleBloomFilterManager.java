@@ -15,7 +15,7 @@ public class GoogleBloomFilterManager implements BloomFilterManager {
 
         @Override
         public void funnel(Shingle shingle, PrimitiveSink primitiveSink) {
-            primitiveSink.putBytes(shingle.getBitArray().toByteArray()).putByte(shingle.getId());
+            primitiveSink.putBytes(shingle.getBitArray().toByteArray()).putInt(shingle.getId());
         }
     };
 
@@ -24,7 +24,7 @@ public class GoogleBloomFilterManager implements BloomFilterManager {
     }
 
     public void fillFilter(Entity standart) {
-        bloomFilter = BloomFilter.create(funnel, standart.getLength() * 8 - shingleLength + 1, 0.01);
+        bloomFilter = BloomFilter.create(funnel, standart.getLength() * 8 - shingleLength + 1, 0.001);
         BitArray buffer = new BitArray(shingleLength);
         BitArray standartSegment = new BitArray(standart.getLength() * 8, standart.getByteArray());
         for (int i = 0; i < standartSegment.length() - shingleLength + 1; i++) {
@@ -32,7 +32,7 @@ public class GoogleBloomFilterManager implements BloomFilterManager {
                 buffer.set(k, standartSegment.get(counter));
                 counter++;
             }
-            Shingle shingle = new Shingle(buffer, shingleLength, (byte) i);
+            Shingle shingle = new Shingle(buffer, shingleLength, i);
             bloomFilter.put(shingle);
             buffer = new BitArray(shingleLength);
         }
@@ -46,8 +46,8 @@ public class GoogleBloomFilterManager implements BloomFilterManager {
             for (int k = 0, counter = k + i; k < shingleLength; k++) {
                 buffer.set(k, segment.get(counter));
                 counter++;
-            }
-            Shingle shingle = new Shingle(buffer, shingleLength, (byte) i);
+            };
+            Shingle shingle = new Shingle(buffer, shingleLength, i);
             if (bloomFilter.mightContain(shingle)) same++;
             buffer = new BitArray(shingleLength);
         }

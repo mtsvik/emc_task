@@ -8,9 +8,9 @@ import sun.security.util.BitArray;
 public class Shingle {
     private BitArray bitArray;
     private int length;
-    private byte id;
+    private int id;
 
-    public Shingle(BitArray bitArray, int length, byte id) {
+    public Shingle(BitArray bitArray, int length, int id) {
         this.bitArray = bitArray;
         this.length = length;
         this.id = id;
@@ -24,7 +24,7 @@ public class Shingle {
         return length;
     }
 
-    public byte getId() {
+    public int getId() {
         return id;
     }
 }

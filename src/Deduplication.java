@@ -63,7 +63,7 @@ public class Deduplication {
     public void deduplication(BloomFilterManager bfm) {
         metaData = new ArrayList<>();
         double same = 0;
-        for (int i = 0; i < physicalData.size(); i += physicalData.size() / 30) {
+        for (int i = 0; i < physicalData.size(); i += physicalData.size() / 10) {
             if (physicalData.get(i).getByteArray() == null) continue;
             bfm.fillFilter(physicalData.get(i));
             for (int j = i + 1; j < physicalData.size(); j++) {
@@ -74,7 +74,6 @@ public class Deduplication {
                     same++;
                 }
             }
-
         }
         double perc = Math.round((same / physicalData.size()) * 100.0);
         System.out.println("Same segments: " + same + "\nPercent: " + perc);
