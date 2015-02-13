@@ -1,5 +1,3 @@
-import sun.security.util.BitArray;
-
 /**
  * Author: Mikhail Tsvik (tsvik@me.com)
  * Date: 01.02.15
@@ -7,10 +5,10 @@ import sun.security.util.BitArray;
 
 public class DataGenerator {
 
-    public static BitArray generateBits(int length) {
-       BitArray data = new BitArray(length);
+    public static byte[] generateBits(int length) {
+        byte[] data = new byte[(length + 7) / 8];
         for (int i = 0; i < length; i++) {
-            data.set(i, (Math.random() > 0.5));
+            data[i] = (byte) ((Math.random() > 0.5) ? 1 : 0);
         }
         return data;
     }

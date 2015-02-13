@@ -1,5 +1,3 @@
-import sun.security.util.BitArray;
-
 /**
  * Author: Mikhail Tsvik (tsvik@me.com)
  * Date: 01.02.15
@@ -7,24 +5,24 @@ import sun.security.util.BitArray;
 
 public class Segment implements Entity {
 
-    private BitArray bytesArray;
+    private byte[] bytesArray;
     private int length;
 
-    public Segment(BitArray charsBinaryCode) {
+    public Segment(byte[] charsBinaryCode) {
         this.bytesArray = charsBinaryCode;
-        this.length = charsBinaryCode.length();
+        this.length = charsBinaryCode.length;
     }
 
     @Override
-    public BitArray getByteArray() {
+    public byte[] getByteArray() {
         return bytesArray;
     }
 
     @Override
     public String getString() {
         String buffer = "";
-        for (int i = 0; i < bytesArray.length(); i++) {
-            buffer += bytesArray.get(i);
+        for (int i = 0; i < bytesArray.length; i++) {
+            buffer += bytesArray[i];
         }
         return buffer;
     }
