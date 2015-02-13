@@ -11,24 +11,24 @@ public class Test {
 
     public static void main(String[] args) throws IOException {
         File file = new File("/Users/mtsvik/file1.vmdk");
-        int byteSegment = 64;
+        int bitSegment = 512;
         int similarity = 75;
         int shingleLength = 16;
 
         System.out.println("Creating data from file...");
         long time1 = System.currentTimeMillis();
-        Data data = new Data(FileConverter.fileToBytes(file));
+        Data data = new Data(FileConverter.fileToBits(file));
 //        Data data = DataGenerator.generate(100000);
         long time2 = System.currentTimeMillis();
         double result = (time2 - time1) / 1000.0;
         System.out.println("Data created: " + result + " sec");
-        System.out.println("Data size: " + data.getSize() / 1024 / 1024 + "MB\n");
+        System.out.println("Data size: " + data.getSize() / 8 / 1024 / 1024 + "MB\n");
 
         BloomFilterManager bfm = new GoogleBloomFilterManager(shingleLength);
         DistanceCalculator calculator = new HashDistance(bfm);
 //        DistanceCalculator calculator = new HammingDistance();
 //        DistanceCalculator calculator = new EuclideanDistance();
-        Deduplication deduplication = new Deduplication(data, calculator, byteSegment, similarity);
+        Deduplication deduplication = new Deduplication(data, calculator, bitSegment, similarity);
 
         System.out.println("Cutting data on segments...");
         time1 = System.currentTimeMillis();
@@ -36,7 +36,7 @@ public class Test {
         time2 = System.currentTimeMillis();
         result = (time2 - time1) / 1000.0;
         System.out.println("Data cutted: " + result + " sec");
-        System.out.println("Segment size: " + byteSegment / 1024.0 + "KB");
+        System.out.println("Segment size: " + bitSegment / 8 / 1024.0 + "KB");
         System.out.println("Segments number: " + array.size() + "\n");
 
         System.out.println("Deduplicating data...");

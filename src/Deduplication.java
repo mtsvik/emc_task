@@ -1,3 +1,5 @@
+import sun.security.util.BitArray;
+
 import java.util.ArrayList;
 
 /**
@@ -7,29 +9,29 @@ import java.util.ArrayList;
 
 public class Deduplication {
     private Data srcData;
-    private int segmentBytes;
+    private int segmentBits;
     private ArrayList<Entity> physicalData;
     private ArrayList<Entity> metaData;
     private DistanceCalculator calculator;
     private int similarity;
 
-    public Deduplication(Data srcData, DistanceCalculator calculator, int bytes, int similarity) {
+    public Deduplication(Data srcData, DistanceCalculator calculator, int bits, int similarity) {
         this.srcData = srcData;
-        this.segmentBytes = bytes;
+        this.segmentBits = bits;
         this.calculator = calculator;
         this.similarity = similarity;
     }
 
     public ArrayList<Entity> cutData() {
         physicalData = new ArrayList<>();
-        byte[] buffData = new byte[segmentBytes];
-        for (int i = 0, k = 0; i < srcData.getData().length; i++) {
-            buffData[k] = srcData.getData()[i];
+        BitArray buffData = new BitArray(segmentBits);
+        for (int i = 0, k = 0; i < srcData.getData().length(); i++) {
+            buffData.set(k, srcData.getData().get(i));
             k++;
-            if (k == segmentBytes) {
+            if (k == segmentBits) {
                 Entity binaryCode = new Segment(buffData);
                 physicalData.add(binaryCode);
-                buffData = new byte[segmentBytes];
+                buffData = new BitArray(segmentBits);
                 k = 0;
             }
         }
@@ -46,9 +48,9 @@ public class Deduplication {
         metaData = new ArrayList<>();
         double same = 0;
         for (int i = 0; i < physicalData.size(); i += physicalData.size() / 30) {
-            if (physicalData.get(i).getByteArray() == null) continue;
+            if (physicalData.get(i).getBitArray() == null) continue;
             for (int j = i + 1; j < physicalData.size(); j++) {
-                if (physicalData.get(j).getByteArray() == null) continue;
+                if (physicalData.get(j).getBitArray() == null) continue;
                 if (calculator.getSimilarity(physicalData.get(i), physicalData.get(j)) >= similarity) {
                     metaData.add(physicalData.get(j));
                     physicalData.get(j).clear();
@@ -64,10 +66,10 @@ public class Deduplication {
         metaData = new ArrayList<>();
         double same = 0;
         for (int i = 0; i < physicalData.size(); i += physicalData.size() / 30) {
-            if (physicalData.get(i).getByteArray() == null) continue;
+            if (physicalData.get(i).getBitArray() == null) continue;
             bfm.fillFilter(physicalData.get(i));
             for (int j = i + 1; j < physicalData.size(); j++) {
-                if (physicalData.get(j).getByteArray() == null) continue;
+                if (physicalData.get(j).getBitArray() == null) continue;
                 if (calculator.getSimilarity(physicalData.get(j)) >= similarity) {
                     metaData.add(physicalData.get(j));
                     physicalData.get(j).clear();

@@ -24,12 +24,11 @@ public class GoogleBloomFilterManager implements BloomFilterManager {
     }
 
     public void fillFilter(Entity standart) {
-        bloomFilter = BloomFilter.create(funnel, standart.getLength() * 8 - shingleLength + 1, 0.01);
+        bloomFilter = BloomFilter.create(funnel, standart.getLength() - shingleLength + 1, 0.01);
         BitArray buffer = new BitArray(shingleLength);
-        BitArray standartSegment = new BitArray(standart.getLength() * 8, standart.getByteArray());
-        for (int i = 0; i < standartSegment.length() - shingleLength + 1; i++) {
+        for (int i = 0; i < standart.getLength() - shingleLength + 1; i++) {
             for (int k = 0, counter = k + i; k < shingleLength; k++) {
-                buffer.set(k, standartSegment.get(counter));
+                buffer.set(k, standart.getBitArray().get(counter));
                 counter++;
             }
             Shingle shingle = new Shingle(buffer, shingleLength, (byte) i);
@@ -41,17 +40,16 @@ public class GoogleBloomFilterManager implements BloomFilterManager {
     public double getSimilarity(Entity e1) {
         double same = 0;
         BitArray buffer = new BitArray(shingleLength);
-        BitArray segment = new BitArray(e1.getLength() * 8, e1.getByteArray());
-        for (int i = 0; i < segment.length() - shingleLength + 1; i++) {
+        for (int i = 0; i < e1.getLength() - shingleLength + 1; i++) {
             for (int k = 0, counter = k + i; k < shingleLength; k++) {
-                buffer.set(k, segment.get(counter));
+                buffer.set(k, e1.getBitArray().get(counter));
                 counter++;
             }
             Shingle shingle = new Shingle(buffer, shingleLength, (byte) i);
             if (bloomFilter.mightContain(shingle)) same++;
             buffer = new BitArray(shingleLength);
         }
-        return Math.round((same / (double) (e1.getLength() * 8 - shingleLength + 1)) * 100);
+        return Math.round((same / (double) (e1.getLength() - shingleLength + 1)) * 100);
     }
 
 

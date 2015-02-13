@@ -1,3 +1,5 @@
+import sun.security.util.BitArray;
+
 /**
  * Author: Mikhail Tsvik (tsvik@me.com)
  * Date: 01.02.15
@@ -5,24 +7,24 @@
 
 public class Segment implements Entity {
 
-    private byte[] bytesArray;
+    private BitArray bitArray;
     private int length;
 
-    public Segment(byte[] charsBinaryCode) {
-        this.bytesArray = charsBinaryCode;
-        this.length = charsBinaryCode.length;
+    public Segment(BitArray charsBinaryCode) {
+        this.bitArray = charsBinaryCode;
+        this.length = charsBinaryCode.length();
     }
 
     @Override
-    public byte[] getByteArray() {
-        return bytesArray;
+    public BitArray getBitArray() {
+        return bitArray;
     }
 
     @Override
     public String getString() {
         String buffer = "";
-        for (int i = 0; i < bytesArray.length; i++) {
-            buffer += bytesArray[i];
+        for (int i = 0; i < bitArray.length(); i++) {
+            buffer += bitArray.get(i);
         }
         return buffer;
     }
@@ -34,7 +36,7 @@ public class Segment implements Entity {
 
     @Override
     public void clear() {
-        bytesArray = null;
+        bitArray = null;
         length = 0;
     }
 

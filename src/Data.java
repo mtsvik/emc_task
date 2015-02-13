@@ -1,21 +1,23 @@
+import sun.security.util.BitArray;
+
 /**
  * Author: Mikhail Tsvik (tsvik@me.com)
  * Date: 01.02.15
  */
 
 public class Data {
-    private byte[] data;
+    private BitArray data;
     private long size;
 
-    public Data(byte[] data) {
+    public Data(BitArray data) {
         this.data = data;
-        this.size = data.length;
+        this.size = data.length();
     }
 
     public String toString() {
         String string = "";
         for (int i = 0; i < size; i++) {
-            string += data[i];
+            string += data.get(i);
         }
         return string;
     }
@@ -24,7 +26,7 @@ public class Data {
         return size;
     }
 
-    public byte[] getData() {
+    public BitArray getData() {
         return data;
     }
 }
