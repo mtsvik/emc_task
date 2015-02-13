@@ -39,7 +39,7 @@ public class MyBloomFilter<T extends Shingle> {
         return Math.max(1, (int) Math.round((double) m / n * Math.log(2)));
     }
 
-    private void put(T item) {
+    public void put(T item) {
         int[] hashes = createHashes(item);
         for (int hash : hashes) {
             bits.set(hash % numOfBits, true);
@@ -48,7 +48,11 @@ public class MyBloomFilter<T extends Shingle> {
         if (counter == expectedInsertions) counter = 0;
     }
 
-    public int[] createHashes(T item) {
+    public void contain(T item) {
+
+    }
+
+    private int[] createHashes(T item) {
         int base;
         BitArray bitArray = item.getBitArray();
         int[] indexes = null;
@@ -88,8 +92,6 @@ public class MyBloomFilter<T extends Shingle> {
         return indexes;
     }
 
-    public void contain(T item) {
 
-    }
 
 }
