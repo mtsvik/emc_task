@@ -7,26 +7,23 @@ import sun.security.util.BitArray;
 
 public class MyBloomFilter<T extends Shingle> {
     private int expectedInsertions;
-    private double fpp;
     private int numOfHashFunctions;
     private int numOfBits;
     private BitArray bits;
     private int[] simpleNumbers = {71, 139, 241, 311, 457, 569, 613, 727, 857, 911, 277, 53, 179, 359, 419, 541, 631, 769};
     private int[] prevHashIndexes;
-    private int[] prevHashFirst;
-    private int prevHashId;
+    private int prevHashId = 0;
     private int counter = 0;
+    private long matrixOfFirts[][];
 
 
     public MyBloomFilter(int expectedInsertions, double fpp) {
         this.expectedInsertions = expectedInsertions;
-        this.fpp = fpp;
         this.numOfBits = optimalNumOfBits(expectedInsertions, fpp);
         this.numOfHashFunctions = optimalNumOfHashFunctions(expectedInsertions, numOfBits);
         this.bits = new BitArray(numOfBits);
         for (int i = 0; i < bits.length(); i++) bits.set(i, false);
         prevHashIndexes = new int[numOfHashFunctions];
-        prevHashFirst = new int[numOfHashFunctions];
         prevHashId = 0;
     }
 
@@ -41,11 +38,15 @@ public class MyBloomFilter<T extends Shingle> {
         return num;
     }
 
-    public void put(T item) {
+    public void put(T item, Entity segment) {
+        if (counter == 0) matrixOfFirts = segment.getMatrix(simpleNumbers, numOfHashFunctions, item.getLength());
         int[] hashes = createHashes(item);
         for (int hash : hashes) {
+            System.out.println(hash);
             bits.set(hash % numOfBits, true);
         }
+        System.out.println("putted");
+        System.out.println();
         counter++;
         if (counter == expectedInsertions) counter = 0;
     }
@@ -56,24 +57,16 @@ public class MyBloomFilter<T extends Shingle> {
 
     private int[] createHashes(T item) {
         int base;
-        BitArray bitArray = item.getBitArray();
+        BitArray shingleBits = item.getBitArray();
         int[] indexes = null;
         if (counter == 0) {
             indexes = new int[numOfHashFunctions];
             for (int k = 0; k < numOfHashFunctions; k++) {
                 base = simpleNumbers[k];
-                long index = 0;
-                for (int i = 1; i < bitArray.length(); i++) {
-                    int number = bitArray.get(i) ? 1 : 0;
-                    index += (number * Math.pow(base, bitArray.length() - i)) % 1073741824;
-                }
-                long first = (long) ((bitArray.get(0) ? 1 : 0) * Math.pow(base, bitArray.length())) % 1073741824;
-                index = (index + first) % 1073741824;
-                index += item.getId();
-
+                int counter = 0;
+                int b1 = item.getBitArray().get(counter) ? 1 : 0;
+                long index = fastCompute(base, item, counter, b1) + item.getId();
                 prevHashIndexes[k] = (int) index;
-                prevHashFirst[k] = (int) first;
-                prevHashId = item.getId();
                 indexes[k] = (int) index;
             }
         } else {
@@ -81,15 +74,9 @@ public class MyBloomFilter<T extends Shingle> {
             for (int k = 0; k < numOfHashFunctions; k++) {
                 base = simpleNumbers[k];
                 long prevIndex = indexes[k] - prevHashId;
-//                long step1 = (base * (prevIndex - prevHashFirst[k])) % 1073741824;
-//                long step2 = ((bitArray.get(bitArray.length() - 1) ? 1 : 0) * base);
-//                long newIndex = (step1 + step2) % 1073741824;
-                long newIndex = ((base * (prevIndex - prevHashFirst[k])) % 1073741824 + ((bitArray.get(bitArray.length() - 1) ? 1 : 0) * base)) % 1073741824;
+                long newIndex = (Util.mod((base * (prevIndex - matrixOfFirts[k][prevHashId])), Util.MODULE) + ((shingleBits.get(shingleBits.length() - 1) ? 1 : 0) * base)) % Util.MODULE;
                 newIndex += item.getId();
-                long first = (long) (((bitArray.get(0) ? 1 : 0) * Math.pow(base, bitArray.length())) % 1073741824);
-
                 prevHashIndexes[k] = (int) newIndex;
-                prevHashFirst[k] = (int) first;
                 indexes[k] = (int) newIndex;
             }
             prevHashId = item.getId();
@@ -97,5 +84,12 @@ public class MyBloomFilter<T extends Shingle> {
         return indexes;
     }
 
+    private long fastCompute(int base, T item, int k, long b1) {
+        int b2 = item.getBitArray().get(k + 1) ? 1 : 0;
+        long answ = (base * b1 + b2) % Util.MODULE;
+        k++;
+        if (k == item.getBitArray().length() - 1) return (base * answ) % Util.MODULE;
+        return fastCompute(base, item, k, answ);
+    }
 
 }
