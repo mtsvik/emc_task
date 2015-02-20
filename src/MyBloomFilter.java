@@ -11,7 +11,7 @@ public class MyBloomFilter<T extends Shingle> {
     private int numOfHashFunctions;
     private int numOfBits;
     private BitArray bits;
-    private int[] simpleNumbers = {71, 139, 241, 311, 457, 569, 613, 727, 857, 911};
+    private int[] simpleNumbers = {71, 139, 241, 311, 457, 569, 613, 727, 857, 911, 277, 53, 179, 359, 419, 541, 631, 769};
     private int[] prevHashIndexes;
     private int[] prevHashFirst;
     private int prevHashId;
@@ -36,7 +36,9 @@ public class MyBloomFilter<T extends Shingle> {
     }
 
     private int optimalNumOfHashFunctions(long n, long m) {
-        return Math.max(1, (int) Math.round((double) m / n * Math.log(2)));
+        int num = Math.max(1, (int) Math.round((double) m / n * Math.log(2)));
+        if (num > simpleNumbers.length) return simpleNumbers.length;
+        return num;
     }
 
     public void put(T item) {
@@ -79,10 +81,10 @@ public class MyBloomFilter<T extends Shingle> {
             for (int k = 0; k < numOfHashFunctions; k++) {
                 base = simpleNumbers[k];
                 long prevIndex = indexes[k] - prevHashId;
-                long step1 = (base * (prevIndex - prevHashFirst[k])) % 1073741824;
-                long step2 = ((bitArray.get(bitArray.length() - 1) ? 1 : 0) * base);
-                long newIndex = (step1 + step2) % 1073741824;
-//                long newIndex = ((base * (prevIndex - prevHashFirst[k])) % 1073741824 + ((bitArray.get(bitArray.length() - 1) ? 1 : 0) * base)) % 1073741824;
+//                long step1 = (base * (prevIndex - prevHashFirst[k])) % 1073741824;
+//                long step2 = ((bitArray.get(bitArray.length() - 1) ? 1 : 0) * base);
+//                long newIndex = (step1 + step2) % 1073741824;
+                long newIndex = ((base * (prevIndex - prevHashFirst[k])) % 1073741824 + ((bitArray.get(bitArray.length() - 1) ? 1 : 0) * base)) % 1073741824;
                 newIndex += item.getId();
                 long first = (long) (((bitArray.get(0) ? 1 : 0) * Math.pow(base, bitArray.length())) % 1073741824);
 

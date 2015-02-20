@@ -56,7 +56,7 @@ public class Test {
     public static void test() {
         int shingleLength = 64*8;
         Entity segment = new Segment(DataGenerator.generateSegment(8*1024));
-        MyBloomFilter<Shingle> bf = new MyBloomFilter<>(segment.getLength() * 8 - shingleLength + 1, 0.01);
+        MyBloomFilter<Shingle> bf = new MyBloomFilter<>(segment.getLength() * 8 - shingleLength + 1, 0.001);
         fillFilter(segment, bf, shingleLength);
     }
 
