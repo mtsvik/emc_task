@@ -9,5 +9,6 @@ public interface Entity {
     public String getString();
     public int getLength();
     public void clear();
+    public long[][] getMatrix(int[] bases, int numOfHashfunctions, int shingleLength);
 
 }
