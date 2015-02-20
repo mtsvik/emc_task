@@ -42,17 +42,19 @@ public class MyBloomFilter<T extends Shingle> {
         if (counter == 0) matrixOfFirts = segment.getMatrix(simpleNumbers, numOfHashFunctions, item.getLength());
         int[] hashes = createHashes(item);
         for (int hash : hashes) {
-            System.out.println(hash);
             bits.set(hash % numOfBits, true);
         }
-        System.out.println("putted");
-        System.out.println();
         counter++;
         if (counter == expectedInsertions) counter = 0;
     }
 
-    public void contain(T item) {
-
+    public boolean contain(T item, Entity segment) {
+        if (counter == 0) matrixOfFirts = segment.getMatrix(simpleNumbers, numOfHashFunctions, item.getLength());
+        int[] hashes = createHashes(item);
+        for (int hash : hashes) {
+            if (!bits.get(hash % numOfBits)) return false;
+        }
+        return true;
     }
 
     private int[] createHashes(T item) {
@@ -74,7 +76,8 @@ public class MyBloomFilter<T extends Shingle> {
             for (int k = 0; k < numOfHashFunctions; k++) {
                 base = simpleNumbers[k];
                 long prevIndex = indexes[k] - prevHashId;
-                long newIndex = (Util.mod((base * (prevIndex - matrixOfFirts[k][prevHashId])), Util.MODULE) + ((shingleBits.get(shingleBits.length() - 1) ? 1 : 0) * base)) % Util.MODULE;
+                long newIndex = (Util.mod((base * (prevIndex - matrixOfFirts[k][prevHashId])), Util.MODULE) +
+                        ((shingleBits.get(shingleBits.length() - 1) ? 1 : 0) * base)) % Util.MODULE;
                 newIndex += item.getId();
                 prevHashIndexes[k] = (int) newIndex;
                 indexes[k] = (int) newIndex;
