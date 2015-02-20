@@ -1,3 +1,5 @@
+import sun.security.util.BitArray;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,6 +12,8 @@ import java.util.ArrayList;
 public class Test {
 
     public static void main(String[] args) throws IOException {
+        test();
+
         File file = new File("/Users/mtsvik/file1.vmdk");
         int byteSegment = 64;
         int similarity = 75;
@@ -47,7 +51,27 @@ public class Test {
         time2 = System.currentTimeMillis();
         result = (time2 - time1) / 1000.0;
         System.out.println("Data deduplicated: " + result + " sec");
+    }
 
+    public static void test() {
+        int shingleLength = 64*8;
+        Entity segment = new Segment(DataGenerator.generateSegment(8*1024));
+        MyBloomFilter<Shingle> bf = new MyBloomFilter<>(segment.getLength() * 8 - shingleLength + 1, 0.01);
+        fillFilter(segment, bf, shingleLength);
+    }
+
+    public static void fillFilter(Entity standart, MyBloomFilter<Shingle> bloomFilter, int shingleLength) {
+        BitArray buffer = new BitArray(shingleLength);
+        BitArray standartSegment = new BitArray(standart.getLength() * 8, standart.getByteArray());
+        for (int i = 0; i < standartSegment.length() - shingleLength + 1; i++) {
+            for (int k = 0, counter = k + i; k < shingleLength; k++) {
+                buffer.set(k, standartSegment.get(counter));
+                counter++;
+            }
+            Shingle shingle = new Shingle(buffer, shingleLength, i);
+            bloomFilter.put(shingle);
+            buffer = new BitArray(shingleLength);
+        }
     }
 
 }

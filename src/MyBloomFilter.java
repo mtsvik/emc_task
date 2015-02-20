@@ -11,7 +11,7 @@ public class MyBloomFilter<T extends Shingle> {
     private int numOfHashFunctions;
     private int numOfBits;
     private BitArray bits;
-    private int[] simpleNumbers = {65713, 77101, 75853, 97943, 92849, 75437, 82009, 79627, 98893, 91757};
+    private int[] simpleNumbers = {71, 139, 241, 311, 457, 569, 613, 727, 857, 911};
     private int[] prevHashIndexes;
     private int[] prevHashFirst;
     private int prevHashId;
@@ -60,38 +60,40 @@ public class MyBloomFilter<T extends Shingle> {
             indexes = new int[numOfHashFunctions];
             for (int k = 0; k < numOfHashFunctions; k++) {
                 base = simpleNumbers[k];
-                int index = 0;
+                long index = 0;
                 for (int i = 1; i < bitArray.length(); i++) {
                     int number = bitArray.get(i) ? 1 : 0;
-                    index += number * Math.pow(base, bitArray.length() - i);
+                    index += (number * Math.pow(base, bitArray.length() - i)) % 1073741824;
                 }
-                int first = (int) ((bitArray.get(0) ? 1 : 0) * Math.pow(base, bitArray.length()));
-                index += first;
+                long first = (long) ((bitArray.get(0) ? 1 : 0) * Math.pow(base, bitArray.length())) % 1073741824;
+                index = (index + first) % 1073741824;
                 index += item.getId();
 
-                prevHashIndexes[k] = index;
-                prevHashFirst[k] = first;
+                prevHashIndexes[k] = (int) index;
+                prevHashFirst[k] = (int) first;
                 prevHashId = item.getId();
-                indexes[k] = index;
+                indexes[k] = (int) index;
             }
         } else {
             indexes = prevHashIndexes;
             for (int k = 0; k < numOfHashFunctions; k++) {
                 base = simpleNumbers[k];
-                int prevIndex = indexes[k] - prevHashId;
-                int newIndex = base * (prevIndex - prevHashFirst[k]) + (bitArray.get(bitArray.length()) ? 1 : 0) * base;
+                long prevIndex = indexes[k] - prevHashId;
+                long step1 = (base * (prevIndex - prevHashFirst[k])) % 1073741824;
+                long step2 = ((bitArray.get(bitArray.length() - 1) ? 1 : 0) * base);
+                long newIndex = (step1 + step2) % 1073741824;
+//                long newIndex = ((base * (prevIndex - prevHashFirst[k])) % 1073741824 + ((bitArray.get(bitArray.length() - 1) ? 1 : 0) * base)) % 1073741824;
                 newIndex += item.getId();
-                int first = (int) ((bitArray.get(0) ? 1 : 0) * Math.pow(base, bitArray.length()));
+                long first = (long) (((bitArray.get(0) ? 1 : 0) * Math.pow(base, bitArray.length())) % 1073741824);
 
-                prevHashIndexes[k] = newIndex;
-                prevHashFirst[k] = first;
-                prevHashId = item.getId();
-                indexes[k] = newIndex;
+                prevHashIndexes[k] = (int) newIndex;
+                prevHashFirst[k] = (int) first;
+                indexes[k] = (int) newIndex;
             }
+            prevHashId = item.getId();
         }
         return indexes;
     }
-
 
 
 }

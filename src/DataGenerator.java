@@ -5,16 +5,12 @@
 
 public class DataGenerator {
 
-    public static byte[] generateBits(int length) {
-        byte[] data = new byte[(length + 7) / 8];
-        for (int i = 0; i < length; i++) {
-            data[i] = (byte) ((Math.random() > 0.5) ? 1 : 0);
+    public static byte[] generateSegment(int bytes) {
+        byte[] arr = new byte[bytes];
+        for (int i = 0; i < bytes; i++) {
+            arr[i] = (byte) (Math.random() * 127);
         }
-        return data;
-    }
-
-    public static Data generate(int length) {
-        return new Data(generateBits(length));
+        return arr;
     }
 
 }
