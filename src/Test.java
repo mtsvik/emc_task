@@ -13,7 +13,7 @@ public class Test {
 //        test();
 
         File file = new File("/Users/mtsvik/file1.vmdk");
-        int byteSegment = 64;
+        int byteSegment = 128;
         int similarity = 75;
         int shingleLength = 512;
 
@@ -49,9 +49,12 @@ public class Test {
         time2 = System.currentTimeMillis();
         result = (time2 - time1) / 1000.0;
         System.out.println("Data deduplicated: " + result + " sec");
+
+        System.out.println(deduplication.getUniq().size());
+        System.out.println(deduplication.getDifs().size());
     }
 
-//    public static void test() {
+//    public static void test() throws IOException {
 //        int byteSegment = 3;
 //        int similarity = 70;
 //        int shingleLength = 4;

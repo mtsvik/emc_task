@@ -12,10 +12,10 @@ public class Deduplication {
     private DistanceCalculator calculator;
     private int similarity;
     private ArrayList<Entity> cuttedData;
-    private ArrayList<Entity> uniq;
-    private ArrayList<Entity> difs;
+    private List<Entity> uniq;
+    private List<Entity> difs;
     private List<Entity> buffer;
-    private int bufferSize = 2000;
+    private int bufferSize = 6000;
     private MetaData meta;
 
     public Deduplication(Data srcData, DistanceCalculator calculator, int bytes, int similarity) {
@@ -56,19 +56,46 @@ public class Deduplication {
         uniq = new ArrayList<>();
         difs = new ArrayList<>();
         while (counter != cuttedData.size()) {
-            buffer = cuttedData.subList(counter, bufferSize + counter);
-            for (int i = 0; i < buffer.size(); i++) {
-                counter++;
-                if (buffer.get(i).getByteArray() == null) continue;
-                uniq.add(buffer.get(i));
-                meta.add(i, uniq.size() - 1, -1);
-                for (int j = i + 1; j < buffer.size(); j++) {
-                    if (buffer.get(j).getByteArray() == null) continue;
-                    if (calculator.getSimilarity(buffer.get(i), buffer.get(j)) >= similarity) {
-                        difs.add(buffer.get(j));
-                        meta.add(j, uniq.size() - 1, difs.size() - 1);
-                        buffer.get(j).clear();
-                        same++;
+            if (counter == 0) {
+                buffer = cuttedData.subList(counter, bufferSize);
+                for (int i = 0; i < buffer.size(); i++) {
+                    counter++;
+                    if (buffer.get(i).getByteArray() == null) continue;
+                    uniq.add(buffer.get(i));
+                    meta.add(i, uniq.size() - 1, -1);
+                    for (int j = i + 1; j < buffer.size(); j++) {
+                        if (buffer.get(j).getByteArray() == null) continue;
+                        if (calculator.getSimilarity(buffer.get(i), buffer.get(j)) >= similarity) {
+                            difs.add(buffer.get(j));
+                            meta.add(j, uniq.size() - 1, difs.size() - 1);
+                            buffer.get(j).clear();
+                            same++;
+                        }
+                    }
+                }
+            } else {
+                if ((cuttedData.size() - counter) < bufferSize) {
+                    bufferSize = cuttedData.size() - counter;
+                }
+                buffer = cuttedData.subList(counter, bufferSize + counter);
+                System.out.println(uniq.size());
+                System.out.println(difs.size());
+                System.out.println(meta.getMetaData().size());
+                System.out.println();
+                for (int i = 0; i < buffer.size(); i++) {
+                    counter++;
+                    for (int j = 0; j < uniq.size(); j++) {
+                        if (calculator.getSimilarity(buffer.get(i), uniq.get(j)) >= similarity) {
+                            difs.add(buffer.get(i));
+                            meta.add(counter + i, j, difs.size() - 1);
+                            same++;
+                            break;
+                        }
+                        if (j == (uniq.size() - 1)) {
+                            uniq.add(buffer.get(i));
+                            meta.add(counter + i, uniq.size() - 1, -1);
+                            break;
+                        }
                     }
                 }
             }
@@ -77,7 +104,19 @@ public class Deduplication {
         System.out.println("Same segments: " + same + "\nPercent: " + perc);
     }
 
-//    public void deduplication(BloomFilterManager bfm) {
+    public List<Entity> getUniq() {
+        return uniq;
+    }
+
+    public List<Entity> getDifs() {
+        return difs;
+    }
+
+    public MetaData getMeta() {
+        return meta;
+    }
+
+    //    public void deduplication(BloomFilterManager bfm) {
 //        metaData = new ArrayList<>();
 //        double same = 0;
 //        for (int i = 0; i < cuttedData.size(); i+= cuttedData.size() / 10) {
