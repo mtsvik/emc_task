@@ -15,7 +15,7 @@ public class Test {
         File file = new File("/Users/mtsvik/file1.vmdk");
         int byteSegment = 64;
         int similarity = 75;
-        int shingleLength = 16;
+        int shingleLength = 512;
 
         System.out.println("Creating data from file...");
         long time1 = System.currentTimeMillis();
@@ -27,10 +27,9 @@ public class Test {
         System.out.println("Data size: " + data.getSize() / 1024 / 1024 + "MB\n");
 
 //        BloomFilterManager bfm = new GoogleBloomFilterManager(shingleLength);
-        BloomFilterManager bfm = new MyBloomFilterManager(shingleLength);
-        DistanceCalculator calculator = new HashDistance(bfm);
-//        DistanceCalculator calculator = new HammingDistance();
-//        DistanceCalculator calculator = new EuclideanDistance();
+//        BloomFilterManager bfm = new MyBloomFilterManager(shingleLength);
+//        DistanceCalculator calculator = new HashDistance(bfm);
+        DistanceCalculator calculator = new HammingDistance();
         Deduplication deduplication = new Deduplication(data, calculator, byteSegment, similarity);
 
         System.out.println("Cutting data on segments...");
@@ -45,34 +44,23 @@ public class Test {
         System.out.println("Deduplicating data...");
         System.out.println("Similarity: " + similarity + "%");
         time1 = System.currentTimeMillis();
-//        deduplication.deduplication();
-        deduplication.deduplication(bfm);
+        deduplication.deduplication();
+//        deduplication.deduplication(bfm);
         time2 = System.currentTimeMillis();
         result = (time2 - time1) / 1000.0;
         System.out.println("Data deduplicated: " + result + " sec");
     }
 
-    public static void test() {
-        int byteSegment = 3;
-        int similarity = 70;
-        int shingleLength = 4;
-//        Entity segment = new Segment(DataGenerator.generateSegment(8*1024));
-        BloomFilterManager bloomFilterManager = new MyBloomFilterManager(shingleLength);
-        DistanceCalculator calculator = new HashDistance(bloomFilterManager);
-        Data data = new Data(new byte[] {
-                98, 'S', 'a',
-                98, 's', 'b',
-                96, 'T', 'a',
-                98, 'S', 'a',
-                98, 21, 12,
-                98, 20, 13,
-                98, 21, 11,
-                98, 'S', 'a',
-                98, 'S', 'a'});
-        Deduplication deduplication = new Deduplication(data, calculator, byteSegment, similarity);
-        ArrayList<Entity> array = deduplication.cutData();
-        deduplication.deduplication(bloomFilterManager);
-
-
-    }
+//    public static void test() {
+//        int byteSegment = 3;
+//        int similarity = 70;
+//        int shingleLength = 4;
+////        Entity segment = new Segment(DataGenerator.generateSegment(8*1024));
+//        BloomFilterManager bloomFilterManager = new MyBloomFilterManager(shingleLength);
+//        DistanceCalculator calculator = new HashDistance(bloomFilterManager);
+//        Data data = new Data(new byte[] {98, 'S', 'a', 98, 's', 'b', 96, 'T', 'a', 98, 'S', 'a', 98, 21, 12, 98, 20, 13, 98, 21, 11, 98, 'S', 'a', 98, 'S', 'a'});
+//        Deduplication deduplication = new Deduplication(data, calculator, byteSegment, similarity);
+//        ArrayList<Entity> array = deduplication.cutData();
+//        deduplication.deduplication(bloomFilterManager);
+//    }
 }
