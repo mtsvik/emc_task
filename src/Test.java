@@ -12,8 +12,8 @@ public class Test {
     public static void main(String[] args) throws IOException {
 //        test();
 
-        File file = new File("/Users/mtsvik/file1.vmdk");
-        int byteSegment = 128;
+        File file = new File("/Users/mtsvik/file2.vmdk");
+        int byteSegment = 32;
         int similarity = 75;
         int shingleLength = 512;
 
@@ -49,9 +49,6 @@ public class Test {
         time2 = System.currentTimeMillis();
         result = (time2 - time1) / 1000.0;
         System.out.println("Data deduplicated: " + result + " sec");
-
-        System.out.println(deduplication.getUniq().size());
-        System.out.println(deduplication.getDifs().size());
     }
 
 //    public static void test() throws IOException {

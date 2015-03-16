@@ -1,4 +1,4 @@
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -7,27 +7,35 @@ import java.util.Map;
  */
 
 public class MetaData {
-    private Map<Integer, Meta> data;
+    private Map<Integer, Entry> data;
 
     public MetaData() {
-        this.data = new Hashtable<>();
+        this.data = new HashMap<>();
     }
 
-    public void add(int originalIndex, int uniqIndex, int difsIndex) {
-        data.put(originalIndex, new Meta(uniqIndex, difsIndex));
+    public Entry add(int originalIndex, int uniqIndex, int difsIndex) {
+        return data.put(originalIndex, new Entry(uniqIndex, difsIndex));
     }
 
-    public Map<Integer, Meta> getMetaData() {
+    public Map<Integer, Entry> getMetaData() {
         return data;
     }
 
-    static class Meta {
-        static int u;
-        static int d;
+    public int size() {
+        return data.size();
+    }
 
-        public Meta(int uniq, int difs) {
-            u = uniq;
-            d = difs;
+    class Entry {
+        private int u;
+        private int d;
+
+        public Entry(int uniq, int difs) {
+            this.u = uniq;
+            this.d = difs;
+        }
+
+        public String toString() {
+            return "uniq -> " + u + ", difs -> " + d;
         }
     }
 }
