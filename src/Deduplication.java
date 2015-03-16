@@ -14,8 +14,8 @@ public class Deduplication {
     private ArrayList<Entity> cuttedData;
     private List<Entity> uniq;
     private List<Entity> difs;
-    private List<Entity> buffer;
     private int bufferSize = 6000;
+    private int bufferSizeIndex = bufferSize;
     private MetaData meta;
 
     public Deduplication(Data srcData, DistanceCalculator calculator, int bytes, int similarity) {
@@ -51,15 +51,17 @@ public class Deduplication {
     public void deduplication() {
         double same = 0;
         int counter = 0;
+        int bufferCounter = 1;
         meta = new MetaData();
-        buffer = new ArrayList<>(bufferSize);
+        List<Entity> buffer;
         uniq = new ArrayList<>();
         difs = new ArrayList<>();
-        while (counter != cuttedData.size()) {
+
+        while (counter + 1 != cuttedData.size()) {
             if (counter == 0) {
-                buffer = cuttedData.subList(counter, bufferSize);
+                buffer = new ArrayList<>(cuttedData.subList(0, bufferSize));
                 for (int i = 0; i < buffer.size(); i++) {
-                    counter++;
+                    counter = i;
                     if (buffer.get(i).getByteArray() == null) continue;
                     uniq.add(buffer.get(i));
                     meta.add(i, uniq.size() - 1, -1);
@@ -75,33 +77,34 @@ public class Deduplication {
                 }
             } else {
                 if ((cuttedData.size() - counter) < bufferSize) {
-                    bufferSize = cuttedData.size() - counter;
+                    bufferSize = cuttedData.size() - counter - 1;
                 }
-                buffer = cuttedData.subList(counter, bufferSize + counter);
-                System.out.println(uniq.size());
-                System.out.println(difs.size());
-                System.out.println(meta.getMetaData().size());
-                System.out.println();
+                buffer = new ArrayList<>(cuttedData.subList(counter + 1, bufferSize + counter + 1));
                 for (int i = 0; i < buffer.size(); i++) {
                     counter++;
                     for (int j = 0; j < uniq.size(); j++) {
                         if (calculator.getSimilarity(buffer.get(i), uniq.get(j)) >= similarity) {
                             difs.add(buffer.get(i));
-                            meta.add(counter + i, j, difs.size() - 1);
+                            if (meta.add(bufferSizeIndex * bufferCounter + i, j, difs.size() - 1) != null) System.out.println(counter);
                             same++;
                             break;
-                        }
-                        if (j == (uniq.size() - 1)) {
+                        } else if (j == (uniq.size() - 1)) {
                             uniq.add(buffer.get(i));
-                            meta.add(counter + i, uniq.size() - 1, -1);
+                            if (meta.add(bufferSizeIndex * bufferCounter + i, uniq.size() - 1, -1) != null) System.out.println("    " + counter);
                             break;
                         }
                     }
                 }
+                bufferCounter++;
             }
         }
-        double perc = Math.round((same / cuttedData.size()) * 100.0);
-        System.out.println("Same segments: " + same + "\nPercent: " + perc);
+        double rate = Math.round((same / cuttedData.size()) * 100.0) / 100.0;
+        System.out.println(
+                "------------------" +
+                "\nSame segments: " + difs.size() +
+                "\nUnique segments: " + uniq.size() +
+                "\nMeta segments: " + meta.size() +
+                "\nDeduplication rate: " + rate);
     }
 
     public List<Entity> getUniq() {
