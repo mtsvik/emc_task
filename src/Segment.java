@@ -7,6 +7,7 @@ public class Segment implements Entity {
 
     private byte[] bytesArray;
     private int length;
+    private boolean flag = false;
 
     public Segment(byte[] charsBinaryCode) {
         this.bytesArray = charsBinaryCode;
@@ -19,8 +20,9 @@ public class Segment implements Entity {
     }
 
     @Override
-    public String getString() {
+    public String toString() {
         String buffer = "";
+        if (bytesArray == null) return "NULL";
         for (int i = 0; i < bytesArray.length; i++) {
             buffer += bytesArray[i];
         }
@@ -29,7 +31,7 @@ public class Segment implements Entity {
 
     @Override
     public int getLength() {
-        return length;
+        return bytesArray.length;
     }
 
     public int getBit(int var1) throws ArrayIndexOutOfBoundsException {
@@ -46,8 +48,13 @@ public class Segment implements Entity {
 
     @Override
     public void clear() {
-        bytesArray = null;
+        flag = true;
         length = 0;
+    }
+
+    @Override
+    public boolean isClear() {
+        return flag;
     }
 
     @Override

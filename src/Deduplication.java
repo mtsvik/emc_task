@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,45 +9,49 @@ import java.util.List;
 
 public class Deduplication {
     private Data srcData;
-    private int segmentBytes;
+    private int segmentSizeByte;
     private DistanceCalculator calculator;
     private int similarity;
     private ArrayList<Entity> cuttedData;
-    private List<Entity> uniq;
-    private List<Entity> difs;
-    private int bufferSize = 6000;
+    private ArrayList<Entity> uniq;
+    private ArrayList<Entity> difs;
+    private int bufferSize = 1000;
     private int bufferSizeIndex = bufferSize;
     private MetaData meta;
 
     public Deduplication(Data srcData, DistanceCalculator calculator, int bytes, int similarity) {
         this.srcData = srcData;
-        this.segmentBytes = bytes;
+        this.segmentSizeByte = bytes;
         this.calculator = calculator;
         this.similarity = similarity;
     }
 
-    public ArrayList<Entity> cutData() {
+    public ArrayList<Entity> cutData() throws IOException {
         cuttedData = new ArrayList<>();
-        byte[] buffData = new byte[segmentBytes];
+        byte[] buffData = new byte[segmentSizeByte];
+        int end = (int) Util.mod(srcData.getData().length, segmentSizeByte);
         for (int i = 0, k = 0; i < srcData.getData().length; i++) {
             buffData[k] = srcData.getData()[i];
             k++;
-            if (k == segmentBytes) {
+            if (k == segmentSizeByte) {
                 Entity binaryCode = new Segment(buffData);
                 cuttedData.add(binaryCode);
-                buffData = new byte[segmentBytes];
+                buffData = new byte[segmentSizeByte];
                 k = 0;
             }
         }
+        if (end != 0) {
+            buffData = new byte[end];
+            int k = srcData.getData().length - end;
+            for (int i = 0; i < end; i++) {
+                buffData[i] = srcData.getData()[k];
+                k++;
+            }
+            Entity binaryCode = new Segment(buffData);
+            cuttedData.add(binaryCode);
+        }
         return cuttedData;
     }
-
-
-    /**
-     * segmentsNumber - число сегментов, с которыми сравнивается эталонный сегмент.
-     * В первом цикле после первой итерации происходит прыжок (выбор следующего эталонного сегмента
-     * через 1/30 от общего количества сегментов).
-     */
 
     public void deduplication() {
         double same = 0;
@@ -62,11 +67,11 @@ public class Deduplication {
                 buffer = new ArrayList<>(cuttedData.subList(0, bufferSize));
                 for (int i = 0; i < buffer.size(); i++) {
                     counter = i;
-                    if (buffer.get(i).getByteArray() == null) continue;
+                    if (buffer.get(i).isClear()) continue;
                     uniq.add(buffer.get(i));
                     meta.add(i, uniq.size() - 1, -1);
                     for (int j = i + 1; j < buffer.size(); j++) {
-                        if (buffer.get(j).getByteArray() == null) continue;
+                        if (buffer.get(j).isClear()) continue;
                         if (calculator.getSimilarity(buffer.get(i), buffer.get(j)) >= similarity) {
                             difs.add(buffer.get(j));
                             meta.add(j, uniq.size() - 1, difs.size() - 1);
@@ -85,12 +90,14 @@ public class Deduplication {
                     for (int j = 0; j < uniq.size(); j++) {
                         if (calculator.getSimilarity(buffer.get(i), uniq.get(j)) >= similarity) {
                             difs.add(buffer.get(i));
-                            if (meta.add(bufferSizeIndex * bufferCounter + i, j, difs.size() - 1) != null) System.out.println(counter);
+                            if (meta.add(bufferSizeIndex * bufferCounter + i, j, difs.size() - 1) != null)
+                                System.out.println(counter);
                             same++;
                             break;
                         } else if (j == (uniq.size() - 1)) {
                             uniq.add(buffer.get(i));
-                            if (meta.add(bufferSizeIndex * bufferCounter + i, uniq.size() - 1, -1) != null) System.out.println("    " + counter);
+                            if (meta.add(bufferSizeIndex * bufferCounter + i, uniq.size() - 1, -1) != null)
+                                System.out.println("    " + counter);
                             break;
                         }
                     }
@@ -99,19 +106,18 @@ public class Deduplication {
             }
         }
         double rate = Math.round((same / cuttedData.size()) * 100.0) / 100.0;
-        System.out.println(
-                "------------------" +
+        System.out.println("------------------" +
                 "\nSame segments: " + difs.size() +
                 "\nUnique segments: " + uniq.size() +
                 "\nMeta segments: " + meta.size() +
                 "\nDeduplication rate: " + rate);
     }
 
-    public List<Entity> getUniq() {
+    public ArrayList<Entity> getUniq() {
         return uniq;
     }
 
-    public List<Entity> getDifs() {
+    public ArrayList<Entity> getDifs() {
         return difs;
     }
 

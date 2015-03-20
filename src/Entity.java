@@ -6,9 +6,9 @@
 public interface Entity {
 
     public byte[] getByteArray();
-    public String getString();
     public int getLength();
     public void clear();
+    public boolean isClear();
     public long[][] getMatrix(int[] bases, int numOfHashfunctions, int shingleLength);
 
 }
