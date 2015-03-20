@@ -10,10 +10,8 @@ import java.util.ArrayList;
 public class Test {
 
     public static void main(String[] args) throws IOException {
-//        test();
-
         File file = new File("/Users/mtsvik/file2.vmdk");
-        int byteSegment = 32;
+        int byteSegment = 16;
         int similarity = 75;
         int shingleLength = 512;
 
@@ -48,19 +46,16 @@ public class Test {
 //        deduplication.deduplication(bfm);
         time2 = System.currentTimeMillis();
         result = (time2 - time1) / 1000.0;
-        System.out.println("Data deduplicated: " + result + " sec");
-    }
+        System.out.println("Data deduplicated: " + result + " sec\n");
 
-//    public static void test() throws IOException {
-//        int byteSegment = 3;
-//        int similarity = 70;
-//        int shingleLength = 4;
-////        Entity segment = new Segment(DataGenerator.generateSegment(8*1024));
-//        BloomFilterManager bloomFilterManager = new MyBloomFilterManager(shingleLength);
-//        DistanceCalculator calculator = new HashDistance(bloomFilterManager);
-//        Data data = new Data(new byte[] {98, 'S', 'a', 98, 's', 'b', 96, 'T', 'a', 98, 'S', 'a', 98, 21, 12, 98, 20, 13, 98, 21, 11, 98, 'S', 'a', 98, 'S', 'a'});
-//        Deduplication deduplication = new Deduplication(data, calculator, byteSegment, similarity);
-//        ArrayList<Entity> array = deduplication.cutData();
-//        deduplication.deduplication(bloomFilterManager);
-//    }
+        System.out.println("Recovery data...");
+        Recovery recovery = new Recovery(deduplication.getMeta(), deduplication.getUniq(), deduplication.getDifs(), (int) file.length());
+        time1 = System.currentTimeMillis();
+        recovery.start();
+        time2 = System.currentTimeMillis();
+        result = (time2 - time1) / 1000.0;
+        System.out.println("Data recovered: " + result + " sec\n");
+
+        System.out.println("Files equals: " + FileConverter.compareFiles("/Users/mtsvik/file2.vmdk","/Users/mtsvik/new_file2.vmdk"));
+    }
 }

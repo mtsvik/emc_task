@@ -34,6 +34,14 @@ public class MetaData {
             this.d = difs;
         }
 
+        public int getUniq() {
+            return u;
+        }
+
+        public int getDifs() {
+            return d;
+        }
+
         public String toString() {
             return "uniq -> " + u + ", difs -> " + d;
         }
