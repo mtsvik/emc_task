@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 /**
@@ -9,25 +10,26 @@ import java.util.ArrayList;
 
 public class Test {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
         File file = new File("/Users/mtsvik/file2.vmdk");
         int byteSegment = 16;
         int similarity = 75;
-        int shingleLength = 512;
+        int shingleLength = 64;
 
         System.out.println("Creating data from file...");
         long time1 = System.currentTimeMillis();
         Data data = new Data(FileConverter.fileToBytes(file));
-//        Data data = DataGenerator.generate(100000);
         long time2 = System.currentTimeMillis();
         double result = (time2 - time1) / 1000.0;
         System.out.println("Data created: " + result + " sec");
         System.out.println("Data size: " + data.getSize() / 1024 / 1024 + "MB\n");
 
-//        BloomFilterManager bfm = new GoogleBloomFilterManager(shingleLength);
-//        BloomFilterManager bfm = new MyBloomFilterManager(shingleLength);
-//        DistanceCalculator calculator = new HashDistance(bfm);
-        DistanceCalculator calculator = new HammingDistance();
+//        BloomFilterManager bfm = new GoogleBloomFilterManager(shingleLength); //
+        BloomFilterManager bfm = new MyBloomFilterManager(shingleLength); // cyclic
+//        BloomFilterManager bfm = new SHABloomFilterManager(shingleLength); // sha1
+
+        DistanceCalculator calculator = new HashDistance(bfm);
+//        DistanceCalculator calculator = new HammingDistance();
         Deduplication deduplication = new Deduplication(data, calculator, byteSegment, similarity);
 
         System.out.println("Cutting data on segments...");
@@ -42,20 +44,20 @@ public class Test {
         System.out.println("Deduplicating data...");
         System.out.println("Similarity: " + similarity + "%");
         time1 = System.currentTimeMillis();
-        deduplication.deduplication();
-//        deduplication.deduplication(bfm);
+//        deduplication.deduplication();
+        deduplication.deduplication(bfm);
         time2 = System.currentTimeMillis();
         result = (time2 - time1) / 1000.0;
         System.out.println("Data deduplicated: " + result + " sec\n");
 
-        System.out.println("Recovery data...");
-        Recovery recovery = new Recovery(deduplication.getMeta(), deduplication.getUniq(), deduplication.getDifs(), (int) file.length());
-        time1 = System.currentTimeMillis();
-        recovery.start();
-        time2 = System.currentTimeMillis();
-        result = (time2 - time1) / 1000.0;
-        System.out.println("Data recovered: " + result + " sec\n");
-
-        System.out.println("Files equals: " + FileConverter.compareFiles("/Users/mtsvik/file2.vmdk","/Users/mtsvik/new_file2.vmdk"));
+//        System.out.println("Recovery data...");
+//        Recovery recovery = new Recovery(deduplication.getMeta(), deduplication.getUniq(), deduplication.getDifs(), (int) file.length());
+//        time1 = System.currentTimeMillis();
+//        recovery.start();
+//        time2 = System.currentTimeMillis();
+//        result = (time2 - time1) / 1000.0;
+//        System.out.println("Data recovered: " + result + " sec\n");
+//
+//        System.out.println("Files equals: " + FileConverter.compareFiles("/Users/mtsvik/file2.vmdk","/Users/mtsvik/new_file2.vmdk"));
     }
 }

@@ -1,21 +1,23 @@
 import sun.security.util.BitArray;
 
+import java.security.NoSuchAlgorithmException;
+
 /**
  * Author: Mikhail Tsvik (tsvik@me.com)
- * Date: 20.02.15
+ * Date: 06.04.15
  */
 
-public class MyBloomFilterManager implements BloomFilterManager {
+public class SHABloomFilterManager implements BloomFilterManager {
     private int shingleLength;
-    private MyBloomFilter<Shingle> bloomFilter;
+    private SHABloomFilter<Shingle> bloomFilter;
 
-    public MyBloomFilterManager(int shingleLength) {
+    public SHABloomFilterManager(int shingleLength) {
         this.shingleLength = shingleLength;
     }
 
     @Override
-    public void fillFilter(Entity standart) {
-        bloomFilter = new MyBloomFilter<>(standart.getLength() * 8 - shingleLength + 1, 0.01);
+    public void fillFilter(Entity standart) throws NoSuchAlgorithmException {
+        bloomFilter = new SHABloomFilter<>(standart.getLength() * 8 - shingleLength + 1, 0.01);
         BitArray buffer = new BitArray(shingleLength);
         BitArray standartSegment = new BitArray(standart.getLength() * 8, standart.getByteArray());
         for (int i = 0; i < standartSegment.length() - shingleLength + 1; i++) {
@@ -24,13 +26,13 @@ public class MyBloomFilterManager implements BloomFilterManager {
                 counter++;
             }
             Shingle shingle = new Shingle(buffer, shingleLength, i);
-            bloomFilter.put(shingle, standart);
+            bloomFilter.put(shingle);
             buffer = new BitArray(shingleLength);
         }
     }
 
     @Override
-    public double getSimilarity(Entity e1) {
+    public double getSimilarity(Entity e1) throws NoSuchAlgorithmException {
         double same = 0;
         BitArray buffer = new BitArray(shingleLength);
         BitArray segment = new BitArray(e1.getLength() * 8, e1.getByteArray());
@@ -40,7 +42,7 @@ public class MyBloomFilterManager implements BloomFilterManager {
                 counter++;
             }
             Shingle shingle = new Shingle(buffer, shingleLength, i);
-            if (bloomFilter.contain(shingle, e1)) same++;
+            if (bloomFilter.contain(shingle)) same++;
             buffer = new BitArray(shingleLength);
         }
         return Math.round((same / (double) (e1.getLength() * 8 - shingleLength + 1)) * 100);

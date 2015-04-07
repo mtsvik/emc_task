@@ -1,3 +1,5 @@
+import java.security.NoSuchAlgorithmException;
+
 /**
  * Author: Mikhail Tsvik (tsvik@me.com)
  * Date: 10.02.15
@@ -21,7 +23,7 @@ public class HashDistance implements DistanceCalculator {
     }
 
     @Override
-    public double getSimilarity(Entity e1) {
+    public double getSimilarity(Entity e1) throws NoSuchAlgorithmException {
         return bloomFilterManager.getSimilarity(e1);
     }
 }
